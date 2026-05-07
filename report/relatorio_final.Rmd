@@ -1,0 +1,56 @@
+---
+title: "Trabalho Final de Estatística II"
+subtitle: "Expectativa de vida e nível de renda: uma análise cross-section com dados do World Bank"
+output: pdf_document
+lang: pt-BR
+---
+
+# 1. Introdução
+
+Texto a ser preenchido na Etapa 4, após consolidação dos resultados.
+
+Pergunta de pesquisa provisória:
+
+> A expectativa de vida média difere entre países de alta renda e países que não são de alta renda?
+
+# 2. Background/Contexto
+
+Texto a ser preenchido na Etapa 4.
+
+# 3. Dados
+
+Base: World Bank Open Data.
+
+Unidade de observação: país.
+
+Recorte: uma observação por país, usando o ano mais recente disponível entre 2020 e 2022.
+
+# 4. Metodologia
+
+Teste principal: teste t de Welch para duas médias independentes.
+
+Hipóteses:
+
+- H0: a expectativa de vida média é igual entre países de alta renda e demais países.
+- H1: a expectativa de vida média é diferente entre países de alta renda e demais países.
+
+Nível de significância: 5%.
+
+# 5. Resultados
+
+Resultados a serem preenchidos na Etapa 4, após execução dos scripts.
+
+# 6. Conclusão
+
+Conclusão a ser preenchida na Etapa 4.
+
+# Apêndice — Códigos
+
+Indicar os scripts usados:
+
+- `R/00_setup.R`
+- `R/01_importacao_limpeza.R`
+- `R/02_analise_descritiva.R`
+- `R/03_testes_hipotese.R`
+- `R/04_graficos.R`
+- `R/05_modelo_ols_opcional.R`
