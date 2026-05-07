@@ -1,56 +1,216 @@
 ---
 title: "Trabalho Final de Estatística II"
 subtitle: "Expectativa de vida e nível de renda: uma análise cross-section com dados do World Bank"
-output: pdf_document
+author: "[preencher nomes dos integrantes]"
+date: "[preencher data de entrega]"
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
 lang: pt-BR
 ---
 
-# 1. Introdução
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
 
-Texto a ser preenchido na Etapa 4, após consolidação dos resultados.
+ler_csv_se_existir <- function(caminho) {
+  if (file.exists(caminho)) {
+    read.csv(caminho, stringsAsFactors = FALSE, check.names = FALSE)
+  } else {
+    NULL
+  }
+}
 
-Pergunta de pesquisa provisória:
+fmt_num <- function(x, digits = 2) {
+  if (length(x) == 0 || is.na(x)) return("[rodar scripts]")
+  format(round(as.numeric(x), digits), decimal.mark = ",", big.mark = ".", nsmall = digits)
+}
 
-> A expectativa de vida média difere entre países de alta renda e países que não são de alta renda?
+tab_desc_grupo <- ler_csv_se_existir("output/tables/tabela_descritiva_por_grupo.csv")
+tab_teste_manual <- ler_csv_se_existir("output/tables/resultado_teste_t_manual.csv")
+tab_teste_r <- ler_csv_se_existir("output/tables/resultado_teste_t_welch.csv")
+tab_ano <- ler_csv_se_existir("output/tables/distribuicao_ano.csv")
+tab_income <- ler_csv_se_existir("output/tables/distribuicao_income.csv")
 
-# 2. Background/Contexto
+tem_resultado_teste <- !is.null(tab_teste_manual) && nrow(tab_teste_manual) > 0
+```
 
-Texto a ser preenchido na Etapa 4.
+# Introdução
 
-# 3. Dados
+A expectativa de vida ao nascer é um indicador sintético das condições de saúde e bem-estar de uma população. Em geral, países com maior renda contam com maior capacidade de financiamento de serviços públicos, infraestrutura sanitária, acesso a cuidados médicos, melhor nutrição e maior escolaridade média. Por isso, é razoável investigar se países classificados como de alta renda apresentam expectativa de vida média diferente daquela observada nos demais países.
 
-Base: World Bank Open Data.
+Este trabalho analisa a seguinte pergunta de pesquisa:
 
-Unidade de observação: país.
+> **A expectativa de vida média difere entre países de alta renda e países que não são de alta renda?**
 
-Recorte: uma observação por país, usando o ano mais recente disponível entre 2020 e 2022.
+A análise utiliza dados reais do World Bank Open Data em formato de corte transversal (*cross-section*), com uma observação por país. A estratégia empírica principal é um teste de hipótese para diferença de médias entre dois grupos independentes. Mais especificamente, utiliza-se o teste t de Welch, adequado para comparar médias quando não se impõe igualdade de variâncias entre os grupos.
 
-# 4. Metodologia
+A hipótese substantiva inicial é que países de alta renda tendem a apresentar maior expectativa de vida média do que os demais países. Entretanto, o teste estatístico será formulado de maneira bicaudal, pois a pergunta do trabalho é se as médias diferem, e não apenas se uma delas é maior.
 
-Teste principal: teste t de Welch para duas médias independentes.
+# Background/Contexto
 
-Hipóteses:
+A expectativa de vida é frequentemente usada como medida agregada de desenvolvimento humano porque resume, em uma única variável, diversos fatores associados à sobrevivência e às condições de vida. Ela pode refletir diferenças de renda, saneamento, acesso à saúde, educação, segurança alimentar, estabilidade institucional e qualidade ambiental.
 
-- H0: a expectativa de vida média é igual entre países de alta renda e demais países.
-- H1: a expectativa de vida média é diferente entre países de alta renda e demais países.
+A classificação de renda do World Bank divide os países em grupos de acordo com seu nível de renda. Essa classificação não deve ser interpretada como uma explicação causal automática para a expectativa de vida. Países de alta renda diferem dos demais em muitas dimensões além da renda. Por isso, o objetivo deste trabalho é mais restrito e estatisticamente apropriado: verificar se há evidência de diferença de médias entre os grupos na amostra analisada.
 
-Nível de significância: 5%.
+Essa distinção é importante para a disciplina de Estatística II. Um teste de hipótese permite avaliar se a diferença observada entre médias amostrais é grande o suficiente, relativamente à variabilidade dos dados, para rejeitar a hipótese de igualdade das médias populacionais. O teste, contudo, não transforma a comparação em evidência causal.
 
-# 5. Resultados
+# Dados
 
-Resultados a serem preenchidos na Etapa 4, após execução dos scripts.
+A base usada no trabalho vem do **World Bank Open Data**. A unidade de observação é o **país**. O recorte é de corte transversal: para cada país, mantém-se apenas o ano mais recente disponível no intervalo de 2020 a 2022, após a remoção de agregados e observações com valores ausentes nas variáveis principais.
 
-# 6. Conclusão
+As variáveis utilizadas são:
 
-Conclusão a ser preenchida na Etapa 4.
+- `life_exp`: expectativa de vida ao nascer, em anos;
+- `income`: grupo de renda do World Bank;
+- `alta_renda`: variável binária construída a partir de `income`, separando países de alta renda dos demais;
+- `gdp_pc`: PIB per capita em paridade de poder de compra, usado apenas como variável descritiva ou complementar;
+- `co2_pc`: emissões de CO2 per capita, usadas apenas como variável descritiva ou complementar;
+- `year`: ano da observação mantida para cada país.
 
-# Apêndice — Códigos
+```{r tabela-anos, results='asis'}
+if (!is.null(tab_ano)) {
+  knitr::kable(tab_ano, caption = "Distribuição das observações por ano")
+} else {
+  cat("**Tabela de distribuição por ano ainda não disponível. Rode `R/01_importacao_limpeza.R`.**")
+}
+```
 
-Indicar os scripts usados:
+```{r tabela-income, results='asis'}
+if (!is.null(tab_income)) {
+  knitr::kable(tab_income, caption = "Distribuição das observações por grupo de renda")
+} else {
+  cat("**Tabela de grupos de renda ainda não disponível. Rode `R/01_importacao_limpeza.R`.**")
+}
+```
 
-- `R/00_setup.R`
-- `R/01_importacao_limpeza.R`
-- `R/02_analise_descritiva.R`
-- `R/03_testes_hipotese.R`
-- `R/04_graficos.R`
-- `R/05_modelo_ols_opcional.R`
+A próxima tabela apresenta as estatísticas descritivas da expectativa de vida por grupo de comparação. Essa tabela é essencial porque mostra o tamanho de cada grupo, as médias, os desvios-padrão e os erros-padrão usados para contextualizar o teste de hipótese.
+
+```{r tabela-desc-grupo, results='asis'}
+if (!is.null(tab_desc_grupo)) {
+  knitr::kable(tab_desc_grupo, caption = "Estatísticas descritivas da expectativa de vida por grupo")
+} else {
+  cat("**Tabela descritiva por grupo ainda não disponível. Rode `R/02_analise_descritiva.R`.**")
+}
+```
+
+# Metodologia
+
+O teste principal compara a expectativa de vida média de dois grupos independentes:
+
+1. países de alta renda;
+2. países que não são de alta renda.
+
+Como a variável de interesse é numérica contínua e há dois grupos independentes, o teste apropriado é um teste t para diferença de médias. Utiliza-se a versão de Welch, que não exige assumir variâncias iguais entre os grupos.
+
+As hipóteses são:
+
+\[
+H_0: \mu_{alta\ renda} = \mu_{demais}
+\]
+
+\[
+H_1: \mu_{alta\ renda} \neq \mu_{demais}
+\]
+
+O nível de significância adotado é:
+
+\[
+\alpha = 0{,}05
+\]
+
+A regra de decisão é:
+
+- se o p-valor for menor que 0,05, rejeitamos \(H_0\);
+- se o p-valor for maior ou igual a 0,05, não rejeitamos \(H_0\).
+
+A estatística do teste é calculada como:
+
+\[
+t = \frac{\bar X_{alta\ renda} - \bar X_{demais}}{\sqrt{\frac{s^2_{alta\ renda}}{n_{alta\ renda}} + \frac{s^2_{demais}}{n_{demais}}}}
+\]
+
+em que \(\bar X\) representa a média amostral, \(s^2\) representa a variância amostral e \(n\) representa o tamanho amostral de cada grupo.
+
+# Resultados
+
+```{r figura-boxplot, out.width='85%', fig.cap='Expectativa de vida por grupo de renda'}
+if (file.exists("output/figures/boxplot_expectativa_vida_grupo.png")) {
+  knitr::include_graphics("output/figures/boxplot_expectativa_vida_grupo.png")
+}
+```
+
+```{r aviso-boxplot, results='asis'}
+if (!file.exists("output/figures/boxplot_expectativa_vida_grupo.png")) {
+  cat("**Boxplot ainda não disponível. Rode `R/04_graficos.R`.**")
+}
+```
+
+```{r figura-media-ic, out.width='85%', fig.cap='Média da expectativa de vida por grupo, com intervalo de confiança de 95%'}
+if (file.exists("output/figures/media_ic_expectativa_vida_grupo.png")) {
+  knitr::include_graphics("output/figures/media_ic_expectativa_vida_grupo.png")
+}
+```
+
+```{r aviso-media-ic, results='asis'}
+if (!file.exists("output/figures/media_ic_expectativa_vida_grupo.png")) {
+  cat("**Gráfico de médias com intervalo de confiança ainda não disponível. Rode `R/04_graficos.R`.**")
+}
+```
+
+```{r tabela-teste, results='asis'}
+if (tem_resultado_teste) {
+  knitr::kable(tab_teste_manual, caption = "Resultado do teste t de Welch calculado manualmente")
+} else {
+  cat("**Resultado do teste ainda não disponível. Rode `R/03_testes_hipotese.R`.**")
+}
+```
+
+```{r interpretacao-automatica, results='asis'}
+if (tem_resultado_teste) {
+  p_valor <- tab_teste_manual$p_valor[1]
+  t_stat <- tab_teste_manual$estatistica_t[1]
+  gl <- tab_teste_manual$graus_liberdade_welch[1]
+  diff <- tab_teste_manual$diferenca_medias_alta_menos_demais[1]
+  ic_inf <- tab_teste_manual$ic_95_inferior[1]
+  ic_sup <- tab_teste_manual$ic_95_superior[1]
+  cat(sprintf(
+    "A diferença estimada entre as médias foi de **%s anos**, calculada como média dos países de alta renda menos média dos demais países. A estatística t foi **%s**, com aproximadamente **%s** graus de liberdade, e o p-valor foi **%s**. O intervalo de confiança de 95%% para a diferença de médias foi de **[%s; %s]** anos.\n\n",
+    fmt_num(diff, 2), fmt_num(t_stat, 3), fmt_num(gl, 2), fmt_num(p_valor, 4), fmt_num(ic_inf, 2), fmt_num(ic_sup, 2)
+  ))
+
+  if (p_valor < 0.05) {
+    cat("Considerando um nível de significância de 5%, o p-valor é inferior a 0,05. Portanto, **rejeitamos a hipótese nula** de igualdade das médias. Há evidência estatística de que a expectativa de vida média difere entre países de alta renda e países que não são de alta renda. Esse resultado deve ser interpretado como evidência de diferença entre grupos, e não como evidência causal.\n")
+  } else {
+    cat("Considerando um nível de significância de 5%, o p-valor é maior ou igual a 0,05. Portanto, **não rejeitamos a hipótese nula** de igualdade das médias. Com os dados disponíveis, não há evidência estatística suficiente para afirmar que a expectativa de vida média difere entre países de alta renda e países que não são de alta renda. Isso não prova que as médias sejam iguais; apenas indica que a amostra não forneceu evidência suficiente contra H0.\n")
+  }
+}
+```
+
+# Conclusão
+
+Este trabalho investigou se a expectativa de vida média difere entre países de alta renda e países que não são de alta renda. Para isso, utilizou dados reais do World Bank Open Data em formato cross-section, com uma observação por país, e aplicou um teste t de Welch para duas médias independentes.
+
+Se os resultados do teste indicarem rejeição da hipótese nula, a conclusão será que há evidência estatística de diferença de expectativa de vida média entre os grupos. Se os resultados não indicarem rejeição da hipótese nula, a conclusão será que os dados disponíveis não fornecem evidência estatística suficiente para afirmar que as médias diferem.
+
+A principal limitação do trabalho é que a comparação entre grupos de renda é descritiva e inferencial, mas não causal. Países de alta renda e demais países diferem em múltiplas dimensões observáveis e não observáveis, como instituições, estrutura demográfica, políticas públicas, qualidade do sistema de saúde, saneamento, educação e histórico de desenvolvimento. Assim, mesmo que exista diferença estatisticamente significativa, o teste não permite afirmar que a renda, isoladamente, causa maior expectativa de vida.
+
+Como extensão, seria possível comparar todos os grupos de renda por ANOVA, testar diferenças de proporções de países com expectativa de vida acima de determinado limiar, ou estimar modelos de regressão complementares com controles adicionais. Essas extensões, porém, devem ser tratadas como análises adicionais, pois o foco principal deste trabalho é a formulação, execução e interpretação de um teste de hipótese.
+
+# Apêndice — Códigos utilizados
+
+Os scripts do projeto foram organizados na pasta `R/` e devem ser executados na seguinte ordem:
+
+1. `R/00_setup.R`: configuração inicial, pacotes e caminhos;
+2. `R/01_importacao_limpeza.R`: importação, limpeza e criação da base cross-section;
+3. `R/02_analise_descritiva.R`: estatísticas descritivas e tabelas por grupo;
+4. `R/03_testes_hipotese.R`: teste t de Welch manual e via função pronta do R;
+5. `R/04_graficos.R`: gráficos principais;
+6. `R/05_modelo_ols_opcional.R`: regressões complementares, se utilizadas.
+
+A análise principal do relatório depende especialmente dos scripts `R/01_importacao_limpeza.R`, `R/02_analise_descritiva.R`, `R/03_testes_hipotese.R` e `R/04_graficos.R`.
